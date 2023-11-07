@@ -17,24 +17,24 @@ import os
 #
 from src.helper import github_request
 
-
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
-  pass#todo
+  pass  #todo
 
 
 @app.route('/release')
 def release():
-  pass#todo
+  pass  #todo
 
 
 @app.route('/most_3_recent/release')
 def most_3_recent__release():
-  pass#todo
+  pass  #todo
 
 
-if __name__=='__main__':
-  app.run(debug=True, port=os.environ.get('PORT', 5000) )
+#push to git
+if __name__ == '__main__':
+  app.run(debug=True, port=os.environ.get('PORT', 5000))
