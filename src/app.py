@@ -12,29 +12,61 @@
    ma_debai = toya03bainopmauflaskapiapp
 """
 
-from flask import Flask, jsonify
-import os
+#pip install Flask requests (cai dat thu vien can thiet)
+from flask import Flask, jsonify, request
+import os, requests
 #
 from src.helper import github_request
 
 app = Flask(__name__)
+# Thiết lập cổng mặc định từ biến môi trường hoặc sử dụng cổng 5000 nếu không có biến PORT
+port = int(os.environ.get("PORT", 5000))
+
+# API endpoint để lấy thông tin release từ kho GitHub
+github_repo_url = "https://api.github.com/repos/pyenv/pyenv"
 
 
-@app.route('/')
+# /: Trả về một đối tượng JSON rỗng.
+@app.route('/', methods=['GET'])
 def index():
-  pass  #todo
+  return jsonify({})
 
 
-@app.route('/release')
-def release():
-  pass  #todo
+# /release: Trả về một danh sách các bản phát hành của kho GitHub github.com/pyenv/pyenv. Mỗi bản phát hành có các trường created_at, tag_name, và body.
+@app.route('/release', methods=['GET'])
+def get_releases():
+  try:
+    response = requests.get(f"{github_repo_url}/releases")
+    releases = response.json()
+    formatted_releases = [{
+        "created_at": release["created_at"],
+        "tag_name": release["tag_name"],
+        "body": release["body"]
+    } for release in releases]
+    return jsonify(formatted_releases)
+  except requests.exceptions.RequestException:
+    return jsonify({}), 404
 
 
-@app.route('/most_3_recent/release')
-def most_3_recent__release():
-  pass  #todo
+# /most_3_recent/release: Trả về 3 bản phát hành mới nhất của endpoint /release.
+@app.route('/most_3_recent/release', methods=['GET'])
+def get_most_recent_releases():
+  try:
+    response = requests.get(f"{github_repo_url}/releases")
+    releases = response.json()
+    sorted_releases = sorted(releases,
+                             key=lambda x: x["created_at"],
+                             reverse=True)
+    most_recent_releases = sorted_releases[:3]
+    formatted_releases = [{
+        "created_at": release["created_at"],
+        "tag_name": release["tag_name"],
+        "body": release["body"]
+    } for release in most_recent_releases]
+    return jsonify(formatted_releases)
+  except requests.exceptions.RequestException:
+    return jsonify({}), 404
 
 
-#push to git
 if __name__ == '__main__':
-  app.run(debug=True, port=os.environ.get('PORT', 5000))
+  app.run(debug=True, port=port)
